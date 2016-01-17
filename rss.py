@@ -41,13 +41,16 @@ for i in rssDataList:
 
 hashin = open('/home/gary/rss/hashes','r')
 
-for i in feed:
-    if not any(feed[i] == line.rstrip('\r\n') for line in hashin):
-        ser.write("%s" %  feed.get(i))
+for key,value in feed.items():
+    if not any(key == line.rstrip('\r\n') for line in hashin):
+        ser.write('* * * * * * * * * * * * * * * * * *'+'\n')
+        ser.write('\n')
+        ser.write("%s" % (value))
+        ser.write('\n')
         ser.write('\n')
         ser.write('\n')
     else:
         continue
 with open('/home/gary/rss/hashes','a') as hashout:
-    for key in feed:
-        hashout.write(feed[key]+'\n')
+    for key,value in feed.items():
+        hashout.write(key+'\n')
