@@ -37,15 +37,17 @@ fluff=0
 for i in rssDataList:
     ihash=hashlib.md5(rssPR.entries[fluff].link + rssCheck.entries[fluff].title)
     fluff=fluff+1
-    feed.update({', '.join(i):ihash.hexdigest()})
+    feed.update({ihash.hexdigest():', '.join(i)})
 
-hashin = open('./hashes','r')
+hashin = open('/home/gary/rss/hashes','r')
 
 for i in feed:
     if not any(feed[i] == line.rstrip('\r\n') for line in hashin):
-        print  "%s" %  feed.get(i)
+        ser.write("%s" %  feed.get(i))
+        ser.write('\n')
+        ser.write('\n')
     else:
         continue
-with open('./hashes','a') as hashout:
+with open('/home/gary/rss/hashes','a') as hashout:
     for key in feed:
         hashout.write(feed[key]+'\n')
