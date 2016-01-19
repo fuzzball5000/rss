@@ -39,10 +39,11 @@ for i in rssDataList:
     fluff=fluff+1
     feed.update({ihash.hexdigest():', '.join(i)})
 
-hashin = open('/home/gary/rss/hashes','r')
+hashin = open('/home/gary/rss/hashes','a+')
 
 for key,value in feed.items():
     if not any(key == line.rstrip('\r\n') for line in hashin):
+        hashin.write(key+'\n')
         ser.write('* * * * * * * * * * * * * * * * * *'+'\n')
         ser.write('\n')
         ser.write("%s" % (value))
@@ -51,6 +52,6 @@ for key,value in feed.items():
         ser.write('\n')
     else:
         continue
-with open('/home/gary/rss/hashes','a') as hashout:
-    for key,value in feed.items():
-        hashout.write(key+'\n')
+
+hashin.close()
+
