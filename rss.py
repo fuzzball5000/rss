@@ -1,6 +1,15 @@
+#!/usr/bin/python
+
+import feedparser
+import time
+import sys
+import serial
+import hashlib
 import time
 import ast
 import json
+
+print('Boop')
 
 ser = serial.Serial(
 
@@ -14,8 +23,6 @@ ser = serial.Serial(
 
 feed_name = sys.argv[1]
 url = sys.argv[2]
-
-
 rssPR = feedparser.parse(url)
 rssCheck = feedparser.parse(url)
 
@@ -36,18 +43,16 @@ for i in rssDataList:
 hashin = open('/Users/grichardson/hashes','r+')
 newhash  = ''.join(line.rstrip('\r\n') for line in hashin)
 
-
 for key,value in feed.items():
     if key not in newhash:
-        hashin.write(key+'\n')
         ser.write('* * * * * * * * * * * * * * * * * *'.encode())
         ser.write('\n'.encode())
         ser.write(('\n'+value).encode())
         ser.write('\n'.encode())
         ser.write('\n'.encode())
         ser.write('\n'.encode())
+        hashin.write(key+'\n')
     else:
         continue
 
 hashin.close()
-
