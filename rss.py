@@ -1,15 +1,10 @@
-#!/usr/bin/python
-
-import feedparser
 import time
-import sys
-import serial
-import hashlib
-import time
+import ast
+import json
 
 ser = serial.Serial(
 
-    port='/dev/ttyS0',
+    port='/dev/tty.usbserial-14120',
     baudrate = 9600,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
@@ -22,34 +17,35 @@ url = sys.argv[2]
 
 
 rssPR = feedparser.parse(url)
-lasthash = str(hashlib.md5(rssPR.entries[0].link + rssPR.entries[0].title))
-
 rssCheck = feedparser.parse(url)
 
 rssDataList = []
 
 for index, item in enumerate(rssPR.entries):
-    rssDataList.append([item.published.encode('utf-8'), item.title.encode('utf-8'),item.description.encode('utf-8')])
+    rssDataList.append([item.published, item.title,item.description])
 
 feed = {}
 fluff=0
 
 for i in rssDataList:
-    ihash=hashlib.md5(rssPR.entries[fluff].link + rssCheck.entries[fluff].title)
+    entry = "\n".join([str(x) for x in i])
+    ihash=hashlib.md5(entry.encode())
+    feed.update({ihash.hexdigest():entry})
     fluff=fluff+1
-    feed.update({ihash.hexdigest():', '.join(i)})
 
-hashin = open('/home/gary/rss/hashes','a+')
+hashin = open('/Users/grichardson/hashes','r+')
+newhash  = ''.join(line.rstrip('\r\n') for line in hashin)
+
 
 for key,value in feed.items():
-    if not any(key == line.rstrip('\r\n') for line in hashin):
+    if key not in newhash:
         hashin.write(key+'\n')
-        ser.write('* * * * * * * * * * * * * * * * * *'+'\n')
-        ser.write('\n')
-        ser.write("%s" % (value))
-        ser.write('\n')
-        ser.write('\n')
-        ser.write('\n')
+        ser.write('* * * * * * * * * * * * * * * * * *'.encode())
+        ser.write('\n'.encode())
+        ser.write(('\n'+value).encode())
+        ser.write('\n'.encode())
+        ser.write('\n'.encode())
+        ser.write('\n'.encode())
     else:
         continue
 
