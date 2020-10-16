@@ -3,39 +3,39 @@
 import feedparser
 import time
 import sys
-import serial
+from escpos.printer import Serial
 import hashlib
 import time
 import ast
 import json
+import io
 
 print('Boop')
 
-ser = serial.Serial(
-
-    port='/dev/tty.usbserial-14120',
-    baudrate = 9600,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS,
-    timeout=1
-)
+p = Serial(devfile='/dev/tty.usbserial-14120',
+           baudrate=9600,
+           bytesize=8,
+           parity='N',
+           stopbits=1,
+           timeout=1.00,
+           dsrdtr=True)
 
 feed_name = sys.argv[1]
 url = sys.argv[2]
 rssPR = feedparser.parse(url)
 rssCheck = feedparser.parse(url)
 
-rssDataList = []
+rssData = {}
 
-for index, item in enumerate(rssPR.entries):
-    rssDataList.append([item.published, item.title,item.description])
+
+for item in rssPR.entries:
+    rssData[item.link] = "{}\n{}\n{}\{}\n".format(item.title, item.author, item.published, item.summary)
 
 feed = {}
 fluff=0
 
-for i in rssDataList:
-    entry = "\n".join([str(x) for x in i])
+for i in rssData:
+    entry = rssData[i]
     ihash=hashlib.md5(entry.encode())
     feed.update({ihash.hexdigest():entry})
     fluff=fluff+1
@@ -45,13 +45,15 @@ newhash  = ''.join(line.rstrip('\r\n') for line in hashin)
 
 for key,value in feed.items():
     if key not in newhash:
-        ser.write('* * * * * * * * * * * * * * * * * *'.encode())
-        ser.write('\n'.encode())
-        ser.write(('\n'+value).encode())
-        ser.write('\n'.encode())
-        ser.write('\n'.encode())
-        ser.write('\n'.encode())
+        
+        p.control('LF')
+        p.control('LF')
+        p.text(value)
+        p.control('LF')
+        p.control('LF')
         hashin.write(key+'\n')
+        
+        pass
     else:
         continue
 
